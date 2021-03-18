@@ -11,7 +11,6 @@
 
 #define DEVICE_NAME "var5"
 #define FIRST_MINOR 0
-#define DEV_CNT 1
 #define WRITE_BUF_SIZE 100
 #define READ_BUF_SIZE 1024
 
@@ -68,7 +67,7 @@ static ssize_t file_write(struct file *f, const char __user *ubuf,
   if (count>READ_BUF_SIZE) count=READ_BUF_SIZE;
   if (copy_from_user(buf,ubuf,count)) return -EFAULT;
   int i;
-  for (i=0;i<READ_BUF_SIZE;i++){
+  for (i=0;i<count;i++){
     if ((buf[i]>='A' && buf[i]<='Z')||(buf[i]>='a' && buf[i]<='z')){
         read_letters++;
     }

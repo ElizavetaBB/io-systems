@@ -7,7 +7,7 @@
 #include <linux/device.h>
 #include <linux/cdev.h>
 #include <linux/proc_fs.h>
-#include <uaccess.h>
+#include <linux/uaccess.h>
 
 #define DEVICE_NAME "var5"
 #define FIRST_MINOR 0

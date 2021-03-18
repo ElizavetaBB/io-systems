@@ -7,6 +7,7 @@
 #include <linux/device.h>
 #include <linux/cdev.h>
 #include <linux/proc_fs.h>
+#include <uaccess.h>
 
 #define DEVICE_NAME "var5"
 #define FIRST_MINOR 0
@@ -33,7 +34,7 @@ static ssize_t proc_read(struct file *filp, char __user *ubuf,size_t count, loff
   if (*offp>=len) return 0;
   if (count>len-*offp) count=len-*offp;
   if(copy_to_user(ubuf,buf+*offp,count)) return -EFAULT;
-	*off+=len;
+	*offp+=len;
 	return len;
 }
 
@@ -103,14 +104,14 @@ static int __init lab1_init(void){
       return -1;
     }
     if ((c_dev_class=class_create(THIS_MODULE,DRIVER_NAME))==NULL){
-      unregister_chardev_region(first,1);//1-cnt
+      unregister_chrdev_region(first,1);//1-cnt
       proc_remove(entry);
       printk(KERN_INFO "Failed the class creation\n");
       return -1;
     }
     if (device_create(c_dev_class,NULL,first,NULL,DRIVER_NAME)==NULL){
       class_destroy(c_dev_class);
-      unregister_chardev_region(first,1);
+      unregister_chrdev_region(first,1);
       proc_remove(entry);
       printk(KERN_INFO "Failed the device creation\n");
       return -1;
@@ -119,7 +120,7 @@ static int __init lab1_init(void){
     if (cdev_add(&c_dev,first,1)<0){
     device_destroy(c_dev,first);
     class_destroy(c_dev_class);
-    unregister_chardev_region(first,1);
+    unregister_chrdev_region(first,1);
     proc_remove(entry);
     printk(KERN_INFO "Failed the creation of files\n");
     return -1;
@@ -130,9 +131,9 @@ static int __init lab1_init(void){
 
 static void __exit lab1_exit(void){
   cdev_del(&c_dev);
-  device_destroy(c_dev,first);
-  class_destroy(c_dev);
-  unregister_chrdev_region(first,DEV_CNT);
+  device_destroy(c_dev_class,first);
+  class_destroy(c_dev_class);
+  unregister_chrdev_region(first,1);
   proc_remove(entry);
   printk(KERN_INFO "Goodbye\n");
 }

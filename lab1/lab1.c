@@ -13,7 +13,7 @@
 #define FIRST_MINOR 0
 #define DEV_CNT 1
 #define WRITE_BUF_SIZE 100
-#define READ_BUF_SIZE 8192
+#define READ_BUF_SIZE 1024
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Borisenko Elizaveta");

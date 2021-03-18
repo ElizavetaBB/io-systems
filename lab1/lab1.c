@@ -67,7 +67,8 @@ static ssize_t file_write(struct file *f, const char __user *ubuf,
   char buf[READ_BUF_SIZE];
   if (count>READ_BUF_SIZE) count=READ_BUF_SIZE;
   if (copy_from_user(buf,ubuf,count)) return -EFAULT;
-  for (int i=0;i<READ_BUF_SIZE;i++){
+  int i;
+  for (i=0;i<READ_BUF_SIZE;i++){
     if ((buf[i]>='A' && buf[i]<='Z')||(buf[i]>='a' && buf[i]<='z')){
         read_letters++;
     }
@@ -97,19 +98,19 @@ static int __init lab1_init(void){
       printk(KERN_INFO "Failed the proc_dir_entry creation\n");
       return -1;
     }
-    printk(KERF_INFO "Trying to initialize\n");
-    if (alloc_chrdev_region(&first,FIRST_MINOR,1,DRIVER_NAME)<0){//1-cnt
+    printk(KERN_INFO "Trying to initialize\n");
+    if (alloc_chrdev_region(&first,FIRST_MINOR,1,DEVICE_NAME)<0){//1-cnt
       proc_remove(entry);
       printk(KERN_INFO "Failed the registration of device files\n");
       return -1;
     }
-    if ((c_dev_class=class_create(THIS_MODULE,DRIVER_NAME))==NULL){
+    if ((c_dev_class=class_create(THIS_MODULE,DEVICE_NAME))==NULL){
       unregister_chrdev_region(first,1);//1-cnt
       proc_remove(entry);
       printk(KERN_INFO "Failed the class creation\n");
       return -1;
     }
-    if (device_create(c_dev_class,NULL,first,NULL,DRIVER_NAME)==NULL){
+    if (device_create(c_dev_class,NULL,first,NULL,DEVICE_NAME)==NULL){
       class_destroy(c_dev_class);
       unregister_chrdev_region(first,1);
       proc_remove(entry);
@@ -118,7 +119,7 @@ static int __init lab1_init(void){
     }
     cdev_init(&c_dev,&fops);
     if (cdev_add(&c_dev,first,1)<0){
-    device_destroy(c_dev,first);
+    device_destroy(c_dev_class,first);
     class_destroy(c_dev_class);
     unregister_chrdev_region(first,1);
     proc_remove(entry);

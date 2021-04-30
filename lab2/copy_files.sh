@@ -8,6 +8,7 @@ sudo umount /mnt/mydisk7
 function format_and_mount(){
     echo "Format vfat:${1}"
     sudo mkfs.vfat /dev/$1
+    sudo mkdir -p /mnt/$1
     echo "Mount:/mnt/${1}"
     sudo mount /dev/$1 /mnt/$1
 }

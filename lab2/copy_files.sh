@@ -26,7 +26,7 @@ function copy_between_virt(){
 }
 
 function copy_virt_real(){
-    echo "Copy files between virtual ${1} and real /dev/testfile"  
+    echo "Copy files between virtual ${1} and real /mnt/testfile"  
     sudo dd if=/mnt/$1/tfile of=/mnt/testfile bs=1M count=7
 }
 

@@ -47,7 +47,7 @@ Passed:5; Dropped:5
 ```
 dmesg
 ```
-![image](https://user-images.githubusercontent.com/56157675/119947524-80b5c200-bfa0-11eb-9516-4bb99549201f.png)
+![image](https://user-images.githubusercontent.com/56157675/119965681-3427b200-bfb3-11eb-9482-9bc2a99d7faa.png)
 
 ### Статистика принятых пакетов
 ![image](https://user-images.githubusercontent.com/56157675/119947424-6380f380-bfa0-11eb-8a26-95f2c5d266fc.png)

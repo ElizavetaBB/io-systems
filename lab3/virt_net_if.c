@@ -41,16 +41,16 @@ int dropped_packets = 0;
 
 static ssize_t proc_read(struct file *file, char __user * ubuf, size_t count, loff_t* ppos) 
 {
-  	char sarr[512];
+  	char buf[512];
   	int written = 0;
   	size_t len;
 
-    written += snprintf(&sarr[written], 512 - written, "Passed: %d; Dropped: %d\n", passed_packets, dropped_packets);
-  	sarr[written] = 0;
+    written += snprintf(&buf[0], 512, "Passed: %d; Dropped: %d\n", passed_packets/2, dropped_packets/2);
+  	buf[written] = 0;
 
-    len = strlen(sarr);
+    len = strlen(buf);
   	if (*ppos > 0 || count < len) return 0;
-  	if (copy_to_user(ubuf, sarr, len) != 0) return -EFAULT;
+  	if (copy_to_user(ubuf, buf, len) != 0) return -EFAULT;
   	*ppos = len;
   	return len;
 }
@@ -68,24 +68,17 @@ static char check_frame(struct sk_buff *skb) {
     //sk_buff - буфер для работы с пакетами, сюда помещается пакет при принятии/отправке с информацией откуда/куда,для чего.
     struct iphdr *ip = (struct iphdr *)skb_network_header(skb);
     int data_len = 0;
-    //ntohs преобазует сетевой порядок расположения байтов положительного короткого целого в узловой порядок
-    data_len = ntohs(ip->tot_len) - sizeof(struct iphdr);
+    //ntohs преобазует сетевой порядок расположения байтов положительного целого короткого числа в узловой порядок
+    //сетевой порядок - в начале числа наиболее значимый бит
+    //узловой порядок - в начале числа наименее значимый бит
+    data_len = ntohs(ip->tot_len) - sizeof(struct iphdr)-8;
 
    if (data_len > 70) {
      dropped_packets++;
      return 0;
    }
-   
    passed_packets++;
    printk(KERN_INFO "-----------");
-   //ntohl - как ntohs, но просто положительного целого
-   printk(KERN_INFO "Source address: %d.%d.%d.%d\n",
-         ntohl(ip->saddr) >> 24, (ntohl(ip->saddr) >> 16) & 0x00FF,
-         (ntohl(ip->saddr) >> 8) & 0x0000FF, (ntohl(ip->saddr)) & 0x000000FF);
-   printk(KERN_INFO "Destination address: %d.%d.%d.%d\n",
-         ntohl(ip->daddr) >> 24, (ntohl(ip->daddr) >> 16) & 0x00FF,
-         (ntohl(ip->daddr) >> 8) & 0x0000FF, (ntohl(ip->daddr)) & 0x000000FF);
-
    printk(KERN_INFO "Size: %d.", data_len);
    printk(KERN_INFO "-----------");
    return 1;
@@ -97,14 +90,16 @@ static char check_frame(struct sk_buff *skb) {
 прием кадра
 */
 static rx_handler_result_t handle_frame(struct sk_buff **pskb) {
-	if (check_frame(*pskb)) {
+    if (child){	
+    if (check_frame(*pskb)==1) {
         //rx_packets = total packets received
         //rx_bytes = total bytes received
         stats.rx_packets++;
         stats.rx_bytes += (*pskb)->len;
     }
     (*pskb)->dev = child;
-    return RX_HANDLER_ANOTHER;
+    return RX_HANDLER_ANOTHER;}
+    return RX_HANDLER_PASS;
 } 
 
 static int open(struct net_device *dev) {
@@ -144,7 +139,6 @@ static netdev_tx_t start_xmit(struct sk_buff *skb, struct net_device *dev) {
         skb->priority = 1;
         //Ставит буфер в очередь для передачи на сетевое устройство
         dev_queue_xmit(skb);
-        return 0;
     }
     return NETDEV_TX_OK;
 }

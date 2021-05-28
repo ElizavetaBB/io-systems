@@ -175,13 +175,13 @@ static void setup(struct net_device *dev) {
 
 int __init vni_init(void) {
     int err = 0;
-    struct priv *priv;
-    //NET_NAME_UNKNOWN - константа, определяющая порядок нумерации создаваемых интерфейсов
-    //  = 0, unknown origin, не открыт для пользовательского пространства 
+    struct priv *priv; 
     if (!(entry = proc_create(PROC_NAME, 0444, NULL, &fops))){
         printk(KERN_ERR "%s: failed to create a proc entry %s\n",THIS_MODULE->name,PROC_NAME);
         return -EIO;
     }
+    //NET_NAME_UNKNOWN - константа, определяющая порядок нумерации создаваемых интерфейсов
+    //  = 0, unknown origin, не открыт для пользовательского пространства
     child = alloc_netdev(sizeof(struct priv), ifname, NET_NAME_UNKNOWN, setup);
     if (child == NULL) {
         printk(KERN_ERR "%s: allocate error", THIS_MODULE->name);
@@ -208,12 +208,12 @@ int __init vni_init(void) {
         free_netdev(child);
         return -EIO;
     }
-    register_netdev(child);
     rtnl_lock();
     //регистрируется обработчик приема
     //вызывающий должен удерживать rntl_mutex
     netdev_rx_handler_register(priv->parent, &handle_frame, NULL);
     rtnl_unlock();
+    register_netdev(child);
     printk(KERN_INFO "Module %s loaded", THIS_MODULE->name);
     printk(KERN_INFO "%s: create link %s", THIS_MODULE->name, child->name);
     printk(KERN_INFO "%s: registered rx handler for %s", THIS_MODULE->name, priv->parent->name);
